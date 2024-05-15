@@ -1,86 +1,18 @@
-// Create web server
-// Create a comment
-// Read a comment
-// Update a comment
-// Delete a comment
+// Create web server for comment
+// =====================================
 
-// Dependencies
+// Import module
 const express = require('express');
-const app = express();
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
+const router = express.Router();
+const commentController = require('../controllers/commentController');
 
-// Connect to MongoDB
-mongoose.connect('mongodb://localhost/comment');
+// Handle request
+router.get('/', commentController.comment_list);
+router.get('/create', commentController.comment_create_get);
+router.post('/create', commentController.comment_create_post);
+router.get('/:id/delete', commentController.comment_delete_get);
+router.post('/:id/delete', commentController.comment_delete_post);
+router.get('/:id/update', commentController.comment_update_get);
+router.post('/:id/update', commentController.comment_update_post);
 
-// Create a schema
-const commentSchema = new mongoose.Schema({
-  comment: String
-});
-
-// Create a model
-const Comment = mongoose.model('Comment', commentSchema);
-
-// Middleware
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-
-// Create a comment
-app.post('/comment', (req, res) => {
-  const newComment = new Comment({
-    comment: req.body.comment
-  });
-
-  newComment.save((err) => {
-    if (err) {
-      res.status(500).json({ error: err });
-    } else {
-      res.status(201).json({ message: 'Comment created' });
-    }
-  });
-});
-
-// Read a comment
-app.get('/comment', (req, res) => {
-  Comment.find((err, comments) => {
-    if (err) {
-      res.status(500).json({ error: err });
-    } else {
-      res.status(200).json(comments);
-    }
-  });
-});
-
-// Update a comment
-app.put('/comment/:id', (req, res) => {
-  Comment.findById(req.params.id, (err, comment) => {
-    if (err) {
-      res.status(500).json({ error: err });
-    } else {
-      comment.comment = req.body.comment;
-      comment.save((err) => {
-        if (err) {
-          res.status(500).json({ error: err });
-        } else {
-          res.status(200).json({ message: 'Comment updated' });
-        }
-      });
-    }
-  });
-});
-
-// Delete a comment
-app.delete('/comment/:id', (req, res) => {
-  Comment.findByIdAndRemove(req.params.id, (err) => {
-    if (err) {
-      res.status(500).json({ error: err });
-    } else {
-      res.status(200).json({ message: 'Comment deleted' });
-    }
-  });
-});
-
-// Start the server
-app.listen(3000, () => {
-  console.log('Server started on http://localhost:3000');
-});
+module.exports = router;
